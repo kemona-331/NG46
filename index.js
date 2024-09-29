@@ -88,7 +88,7 @@ client.on("messageCreate", async message => {
     const image = receivedEmbed.image.url || undefined
     const attribute = receivedEmbed.author.iconURL
     //通知機構
-    if(["【通常】","【最強】","【大地の覇者】","【原初】","【ありがとう！】","【天使】","【龍帝】","【三女神】"].includes(rank)){
+    if(["【超激レア】","【最強】","【大地の覇者】","【原初】","【ありがとう！】","【天使】","【龍帝】","【三女神】"].includes(rank)){
       let m = ""
       let index
       const board = new MessageEmbed()
@@ -97,7 +97,7 @@ client.on("messageCreate", async message => {
         if(!data || !data[0][0] || !data[1][0]){
           board.setTitle("必要な情報が設定されてないから通知出来ないよ")
         }else{
-          board.setTitle("超激レアだよ！")
+          board.setTitle("超激レア出現")
           m = `<@&${data[1][0]}>【超激レア】${name}です！`
           index = 0
         }
@@ -105,7 +105,7 @@ client.on("messageCreate", async message => {
         if(!data || !data[0][1] || !data[1][1]){
           board.setTitle("必要な情報が設定されてないから通知出来ないよ")
         }else{
-          board.setTitle("tohruし")
+          board.setTitle("tohru出現")
           m = `<@&${data[1][1]}>${rank}${name}です！`
           index = 1
         }
