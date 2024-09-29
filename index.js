@@ -141,7 +141,8 @@ client.on("messageCreate", async message => {
           but1.setDisabled(true)
         }
         row = new MessageActionRow()
-        .addComponents(but1,but2,but3)
+        //.addComponents(but1,but2,but3)
+        .addComponents(but1)
         msg = await message.channel.send({ embeds: [ board ], components: [ row ] })
       }
       const embed = new MessageEmbed()
@@ -154,16 +155,16 @@ client.on("messageCreate", async message => {
         if(!interaction.isButton()){
           return;
         }
-        if(interaction.message.id == msg.id && interaction.customId == "remove"){
-          const tao = client.users.cache.get("526620171658330112")
-          row.components[0].setDisabled(true)
-          row.components[1].setDisabled(false)
-          row.components[2].setDisabled(false)
-          msg.edit({ embeds:[ board ], components: [ row ] });
-          await interaction.deferUpdate();
-          interaction.channel.permissionOverwrites.edit(tao, { VIEW_CHANNEL: true }).catch(console.error);
-        }
-        if(interaction.message.id == msg.id && interaction.customId == "mt"){
+        //if(interaction.message.id == msg.id && interaction.customId == "remove"){
+          //const tao = client.users.cache.get("526620171658330112")
+          //row.components[0].setDisabled(true)
+          //row.components[1].setDisabled(false)
+          //row.components[2].setDisabled(false)
+          //msg.edit({ embeds:[ board ], components: [ row ] });
+          //await interaction.deferUpdate();
+          //interaction.channel.permissionOverwrites.edit(tao, { VIEW_CHANNEL: true }).catch(console.error);
+        //}
+        if(interaction.message.id == msg.id){
           const ch = client.channels.cache.get(data[0][index])
           const notify = await ch.send({ content: m, embeds: [ embed ] })
           const success = new MessageEmbed()
