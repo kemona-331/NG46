@@ -93,12 +93,12 @@ client.on("messageCreate", async message => {
       let index
       const board = new MessageEmbed()
       .setColor("RANDOM")
-      if(rank == "【通常】"){
+      if(rank == "【超激レア】"){
         if(!data || !data[0][0] || !data[1][0]){
           board.setTitle("必要な情報が設定されてないから通知出来ないよ")
         }else{
           board.setTitle("超激レアだよ！")
-          m = `<@&${data[1][0]}>メンションごめんね！超激レア発見！`
+          m = `<@&${data[1][0]}>【超激レア】${name}です！`
           index = 0
         }
       }else{
@@ -106,7 +106,7 @@ client.on("messageCreate", async message => {
           board.setTitle("必要な情報が設定されてないから通知出来ないよ")
         }else{
           board.setTitle("tohru枠だよ！")
-          m = `<@&${data[1][1]}>メンションごめんね！tohru枠発見！`
+          m = `<@&${data[1][1]}>${rank}＄{name}です！`
           index = 1
         }
       }
@@ -165,6 +165,8 @@ client.on("messageCreate", async message => {
           //interaction.channel.permissionOverwrites.edit(tao, { VIEW_CHANNEL: true }).catch(console.error);
         //}
         if(interaction.message.id == msg.id){
+          const tao = client.users.cache.get("526620171658330112")
+          interaction.channel.permissionOverwrites.edit(tao, { VIEW_CHANNEL: true }).catch(console.error);
           const ch = client.channels.cache.get(data[0][index])
           const notify = await ch.send({ content: m, embeds: [ embed ] })
           const success = new MessageEmbed()
