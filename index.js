@@ -208,7 +208,6 @@ client.on('error', (err) => {
   console.error("error")
 })
 
-
 let messageListenerEnabled = true;
 
 // ターゲットチャンネルのIDと送信メッセージのペア
