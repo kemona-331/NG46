@@ -105,8 +105,8 @@ client.on("messageCreate", async message => {
         if(!data || !data[0][1] || !data[1][1]){
           board.setTitle("必要な情報が設定されてないから通知出来ないよ")
         }else{
-          board.setTitle("tohru枠だよ！")
-          m = `<@&${data[1][1]}>${rank}＄{name}です！`
+          board.setTitle("tohruし")
+          m = `<@&${data[1][1]}>${rank}${name}です！`
           index = 1
         }
       }
