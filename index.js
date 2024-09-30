@@ -80,107 +80,143 @@ client.on("messageCreate", async message => {
   if (message.author.id != "526620171658330112") return;
   const receivedEmbed = message.embeds[0];
   const data = await db.get(message.guild.id);
-
+  
   if (receivedEmbed && receivedEmbed.title && receivedEmbed.title.match(/待ち構えている...！/) && receivedEmbed.author) {
     const zokusei = receivedEmbed.author.name.match(/\[(.*?)\]/g)[0];
     const rank = `【${receivedEmbed.author.name.split(":")[2].replace(" ", "")}】`;
     const name = receivedEmbed.title.split("\n")[0].replace("が待ち構えている...！", "");
-
-    const lvMatch = receivedEmbed.title.split("\n")[1].replaceAll(",", "").match(/^\D+(\d+)\D+(\d+)\D+(\d+)$/);
-    if (!lvMatch) {
-      console.error("lvが取得できませんでした");
-      return;
-    }
-    const lv = lvMatch[1];
-    const image = receivedEmbed.image?.url || undefined;
+    const lv = receivedEmbed.title.split("\n")[1].replaceAll(",", "").match(/^\D+(\d+)\D+(\d+)\D+(\d+)$/)[1];
+    const image = receivedEmbed.image.url || undefined;
     const attribute = receivedEmbed.author.iconURL;
 
+    // 通知機構
     if (["【通常】", "【最強】", "【大地の覇者】", "【原初】", "【ありがとう！】", "【天使】", "【龍帝】", "【三女神】"].includes(rank)) {
       let m = "";
       let index;
-      const board = new MessageEmbed().setColor("RANDOM");
+      const board = new MessageEmbed()
+        .setColor("RANDOM");
+
       if (rank == "【超激レア】") {
         if (!data || !data[0][0] || !data[1][0]) {
-          board.setTitle("必要な情報が設定されてないから通知出来ないよ");
+          board.setTitle("必要な情報が設定されていないから通知出来ないよ");
         } else {
-          board.setTitle("超激レア出現");
-          m = `<@&${data[1][0]}>【超激レア】${name}です！`;
+          board.setTitle("超激レアだよ！");
+          m = `<@&${data[1][0]}>メンションごめんね！超激レア発見！`;
           index = 0;
         }
       } else {
         if (!data || !data[0][1] || !data[1][1]) {
-          board.setTitle("必要な情報が設定されてないから通知出来ないよ");
+          board.setTitle("必要な情報が設定されていないから通知出来ないよ");
         } else {
-          board.setTitle("tohru出現");
-          m = `<@&${data[1][1]}>${rank}${name}です！`;
+          board.setTitle("tohru枠だよ！");
+          m = `<@&${data[1][1]}>メンションごめんね！tohru枠発見！`;
           index = 1;
         }
       }
 
-      // レア敵が出現したらチャンネルを見えなくする処理
-      const tao = client.users.cache.get("526620171658330112");
-      await message.channel.permissionOverwrites.edit(tao, { VIEW_CHANNEL: false }).catch(console.error);
-
-      // 解除ボタンの作成
-      const row = new MessageActionRow().addComponents(
-        new MessageButton()
-          .setCustomId("unlock_channel")
-          .setLabel("解除")
+      let msg;
+      let row;
+      if (m == "") {
+        msg = await message.channel.send({ embeds: [board] });
+      } else {
+        const but1 = new MessageButton()
+          .setLabel("轢き防止解除")
           .setStyle("SUCCESS")
-      );
+          .setCustomId("remove")
+          .setEmoji("🔓");
+        
+        const but2 = new MessageButton()
+          .setLabel("通知")
+          .setStyle("PRIMARY")
+          .setCustomId(`mt`)
+          .setEmoji("✅");
+        
+        const but3 = new MessageButton()
+          .setLabel("通知しない")
+          .setStyle("DANGER")
+          .setCustomId("nomt")
+          .setEmoji("❎");
+        
+        if (data[3] == true) {
+          message.channel.permissionOverwrites.edit(message.author, { VIEW_CHANNEL: false }).catch(console.error);
+          but2.setDisabled(true);
+          but3.setDisabled(true);
+        } else {
+          but1.setDisabled(true);
+        }
+        
+        row = new MessageActionRow().addComponents(but1, but2, but3);
+        msg = await message.channel.send({ embeds: [board], components: [row] });
+      }
 
       const embed = new MessageEmbed()
         .setAuthor(`属性: ${zokusei}`, attribute)
-        .setDescription(
-          `<#${message.channel.id}>で**${rank}${name}**が出現しました！\n\nLv.${Number(lv).toLocaleString()} HP ${Number(
-            lv * 10 + 50
-          ).toLocaleString()}`
-        )
+        .setDescription(`<#${message.channel.id}>で**${rank}${name}**が出現しました！\n\nLv.\`${Number(lv).toLocaleString()}\` HP \`${Number(lv * 10 + 50).toLocaleString()}\`\n\n[**Direct Link**](https://discord.com/channels/${message.guild.id}/${message.channel.id}/${message.id})`)
         .setFooter("User TAO")
         .setColor("RANDOM");
-
-      if (image) embed.setThumbnail(image);
-
-      // レア敵が出現したチャンネルにボタンを配置して通知
-      const sentMessage = await message.channel.send({ embeds: [embed], components: [row] });
-
+      
+      if (image != undefined) embed.setThumbnail(image);
+      
       // ボタンのインタラクション処理
       client.on("interactionCreate", async interaction => {
         if (!interaction.isButton()) return;
-
-        if (interaction.customId === "unlock_channel") {
-          const tao = client.users.cache.get("526620171658330112");
-          await message.channel.permissionOverwrites.edit(tao, { VIEW_CHANNEL: true }).catch(console.error);
-
-          // 通知完了のメッセージをEmbedで送信
-          const unlockEmbed = new MessageEmbed()
-            .setTitle("通知完了")
-            .setDescription(`レア敵出現により非表示だったチャンネルが、<@${interaction.user.id}> により再表示されました。`)
-            .setColor("GREEN");
-
-          // ボタンを削除し、通知完了のEmbedを表示
-          await interaction.update({ embeds: [unlockEmbed], components: [] });
+        if (interaction.message.id == msg.id) {
+          if (interaction.customId == "remove") {
+            const tao = client.users.cache.get("526620171658330112");
+            row.components[0].setDisabled(true);
+            row.components[1].setDisabled(false);
+            row.components[2].setDisabled(false);
+            msg.edit({ embeds: [board], components: [row] });
+            await interaction.deferUpdate();
+            interaction.channel.permissionOverwrites.edit(tao, { VIEW_CHANNEL: true }).catch(console.error);
+          }
+          if (interaction.customId == "mt") {
+            const ch = client.channels.cache.get(data[0][index]);
+            const notify = await ch.send({ content: m, embeds: [embed] });
+            const success = new MessageEmbed()
+              .setTitle("通知完了")
+              .setURL(`https://discord.com/channels/${notify.guild.id}/${notify.channel.id}/${notify.id}`)
+              .setColor("RANDOM");
+            interaction.message.edit({ embeds: [success], components: [new MessageActionRow().addComponents(new MessageButton().setLabel("🆗").setStyle("SECONDARY").setDisabled(true))] });
+          }
+          if (interaction.customId == "nomt") {
+            interaction.message.delete();
+          }
         }
       });
+    }
 
-      // 自動変更
-      const updateChannelName = async (level) => {
-        const newName = message.channel.name.match(/lv+\d+$/)
-          ? message.channel.name.replace(/lv+\d+$/, `lv${level}`)
-          : `${message.channel.name}-lv${level}`;
-        await message.channel.setName(newName);
-      };
-
-      if (message.channel.topic === "auto:100") {
-        const level = Math.floor(Number(lv) / 100) * 100;
-        await updateChannelName(level);
-      } else if (message.channel.topic === "auto:1000") {
-        const level = Math.floor(Number(lv) / 1000) * 1000;
-        await updateChannelName(level);
-      } else if (message.channel.topic === "auto:10000") {
-        const level = Math.floor(Number(lv) / 10000) * 10000;
-        await updateChannelName(level);
+    // 自動変更機能
+    if (message.channel.topic == "auto:100") {
+      const level = Math.floor(Number(lv) / 100) * 100;
+      if (message.channel.name.match(/lv+\d+$/)) {
+        const n = message.channel.name.match(/lv+(\d+)$/);
+        if (n[1] == level) return;
+        const name = message.channel.name.replace(/lv+\d+$/, `lv${level}`);
+        await message.channel.setName(name);
+        return;
       }
+      await message.channel.setName(`${message.channel.name}-lv${level}`);
+    } else if (message.channel.topic == "auto:1000") {
+      const level = Math.floor(Number(lv) / 1000) * 1000;
+      if (message.channel.name.match(/lv+\d+$/)) {
+        const n = message.channel.name.match(/lv+(\d+)$/);
+        if (n[1] == level) return;
+        const name = message.channel.name.replace(/lv+\d+$/, `lv${level}`);
+        await message.channel.setName(name);
+        return;
+      }
+      await message.channel.setName(`${message.channel.name}-lv${level}`);
+    } else if (message.channel.topic == "auto:10000") {
+      const level = Math.floor(Number(lv) / 10000) * 10000;
+      if (message.channel.name.match(/lv+\d+$/)) {
+        const n = message.channel.name.match(/lv+(\d+)$/);
+        if (n[1] == level) return;
+        const name = message.channel.name.replace(/lv+\d+$/, `lv${level}`);
+        await message.channel.setName(name);
+        return;
+      }
+      await message.channel.setName(`${message.channel.name}-lv${level}`);
     }
   }
 });
