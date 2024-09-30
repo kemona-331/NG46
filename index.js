@@ -88,7 +88,7 @@ client.on("messageCreate", async message => {
     const image = receivedEmbed.image.url || undefined
     const attribute = receivedEmbed.author.iconURL
     //通知機構
-    if(["【超激レア】","【最強】","【大地の覇者】","【原初】","【ありがとう！】","【天使】","【龍帝】","【三女神】"].includes(rank)){
+    if(["【通常】","【最強】","【大地の覇者】","【原初】","【ありがとう！】","【天使】","【龍帝】","【三女神】"].includes(rank)){
       let m = ""
       let index
       const board = new MessageEmbed()
@@ -143,7 +143,7 @@ client.on("messageCreate", async message => {
         row = new MessageActionRow()
         //.addComponents(but1,but2,but3)
         .addComponents(but1)
-        msg = await message.channel.send({ embeds: [ board ], components: [ row ] })
+        
       }
       const embed = new MessageEmbed()
       .setAuthor(`属性: ${zokusei}`,attribute)
@@ -151,6 +151,7 @@ client.on("messageCreate", async message => {
       .setFooter("User TAO")
       .setColor("RANDOM")
       if(image != undefined) embed.setThumbnail(image)
+      msg = await message.channel.send({ embeds: [ board, embed ], components: [ row ] })
       client.on("interactionCreate", async interaction => {
         if(!interaction.isButton()){
           return;
@@ -173,7 +174,6 @@ client.on("messageCreate", async message => {
           .setTitle("通知完了")
           .setURL(`https://discord.com/channels/${notify.guild.id}/${notify.channel.id}/${notify.id}`)
           .setColor("RANDOM")
-          interaction.message.edit({ embeds:[success], components:[ newbutton([ { id: "x", emoji: "🆗", style: 2, disabled: true } ]) ] })
         }
         if(interaction.message.id == msg.id && interaction.customId == "nomt"){
           interaction.message.delete()
