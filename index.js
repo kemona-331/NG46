@@ -77,110 +77,70 @@ client.on('ready', async () => {
 });
 
 client.on("messageCreate", async message => {
-  if(message.author.id != "526620171658330112") return
-  const receivedEmbed = message.embeds[0]
-  const data = await db.get(message.guild.id)
-  if(receivedEmbed && receivedEmbed.title && receivedEmbed.title.match(/待ち構えている...！/) && receivedEmbed.author){
-    const zokusei = receivedEmbed.author.name.match(/\[(.*?)\]/g)[0]
-    const rank = `【${receivedEmbed.author.name.split(":")[2].replace(" ","")}】`
-    const name = receivedEmbed.title.split("\n")[0].replace("が待ち構えている...！","")
-    const lv = receivedEmbed.title.split("\n")[1].replaceAll(",","").match(/^\D+(\d+)\D+(\d+)\D+(\d+)$/)[1]
-    const image = receivedEmbed.image.url || undefined
-    const attribute = receivedEmbed.author.iconURL
-    //通知機構
-    if(["【通常】","【最強】","【大地の覇者】","【原初】","【ありがとう！】","【天使】","【龍帝】","【三女神】"].includes(rank)){
-      let m = ""
-      let index
-      const board = new MessageEmbed()
-      .setColor("RANDOM")
-      if(rank == "【超激レア】"){
-        if(!data || !data[0][0] || !data[1][0]){
-          board.setTitle("必要な情報が設定されてないから通知出来ないよ")
-        }else{
-          board.setTitle("超激レア出現")
-          m = `<@&${data[1][0]}>【超激レア】${name}です！`
-          index = 0
+  if (message.author.id != "526620171658330112") return;
+  const receivedEmbed = message.embeds[0];
+  const data = await db.get(message.guild.id);
+  if (receivedEmbed && receivedEmbed.title && receivedEmbed.title.match(/待ち構えている...！/) && receivedEmbed.author) {
+    const zokusei = receivedEmbed.author.name.match(/\[(.*?)\]/g)[0];
+    const rank = `【${receivedEmbed.author.name.split(":")[2].replace(" ", "")}】`;
+    const name = receivedEmbed.title.split("\n")[0].replace("が待ち構えている...！", "");
+    const lv = receivedEmbed.title.split("\n")[1].replaceAll(",", "").match(/^\D+(\d+)\D+(\d+)\D+(\d+)$/)[1];
+    const image = receivedEmbed.image.url || undefined;
+    const attribute = receivedEmbed.author.iconURL;
+
+    // 通知機構
+    if (["【通常】", "【最強】", "【大地の覇者】", "【原初】", "【ありがとう！】", "【天使】", "【龍帝】", "【三女神】"].includes(rank)) {
+      let m = "";
+      let index;
+      const board = new MessageEmbed().setColor("RANDOM");
+      if (rank == "【超激レア】") {
+        if (!data || !data[0][0] || !data[1][0]) {
+          board.setTitle("必要な情報が設定されてないから通知出来ないよ");
+        } else {
+          board.setTitle("超激レア出現");
+          m = `<@&${data[1][0]}>【超激レア】${name}です！`;
+          index = 0;
         }
-      }else{
-        if(!data || !data[0][1] || !data[1][1]){
-          board.setTitle("必要な情報が設定されてないから通知出来ないよ")
-        }else{
-          board.setTitle("tohru出現")
-          m = `<@&${data[1][1]}>${rank}${name}です！`
-          index = 1
+      } else {
+        if (!data || !data[0][1] || !data[1][1]) {
+          board.setTitle("必要な情報が設定されてないから通知出来ないよ");
+        } else {
+          board.setTitle("tohru出現");
+          m = `<@&${data[1][1]}>${rank}${name}です！`;
+          index = 1;
         }
       }
-      let msg
-      let row
-      if(m == ""){
-        msg = await message.channel.send({ embeds: [ board ] })
-      }else{
-        const but1 = new MessageButton()
-        const but2 = new MessageButton()
-        const but3 = new MessageButton()
-        but1
-        .setLabel("轢き防止解除")
-        .setStyle("SUCCESS")
-        .setCustomId("remove")
-        .setEmoji("🔓")
-        but2
-        .setLabel("通知")
-        .setStyle("PRIMARY")
-        .setCustomId(`mt`)
-        .setEmoji("✅")
-        but3
-        .setLabel("通知しない")
-        .setStyle("DANGER")
-        .setCustomId("nomt")
-        .setEmoji("❎")
-        if(data[3] == true){
-          message.channel.permissionOverwrites.edit(message.author, { VIEW_CHANNEL: false }).catch(console.error);
-          but2.setDisabled(true)
-          but3.setDisabled(true)
-        }else{
-          but1.setDisabled(true)
-        }
-        row = new MessageActionRow()
-        //.addComponents(but1,but2,but3)
-        .addComponents(but1)
-        
-      }
+      
+      // レア敵が出現したらチャンネルを見えなくする処理
+      const tao = client.users.cache.get("526620171658330112");
+      await message.channel.permissionOverwrites.edit(tao, { VIEW_CHANNEL: false }).catch(console.error);
+
       const embed = new MessageEmbed()
-      .setAuthor(`属性: ${zokusei}`,attribute)
-      .setDescription(`<#${message.channel.id}>で**${rank}${name}**が出現しました！\n\nLv.\`${Number(lv).toLocaleString()}\` HP \`${Number(lv*10+50).toLocaleString()}\`\n\n[**Direct Link**](https://discord.com/channels/${message.guild.id}/${message.channel.id}/${message.id})`)
-      .setFooter("User TAO")
-      .setColor("RANDOM")
-      if(image != undefined) embed.setThumbnail(image)
-      msg = await message.channel.send({ embeds: [ board, embed ], components: [ row ] })
-      client.on("interactionCreate", async interaction => {
-        if(!interaction.isButton()){
-          return;
-        }
-        //if(interaction.message.id == msg.id && interaction.customId == "remove"){
-          //const tao = client.users.cache.get("526620171658330112")
-          //row.components[0].setDisabled(true)
-          //row.components[1].setDisabled(false)
-          //row.components[2].setDisabled(false)
-          //msg.edit({ embeds:[ board ], components: [ row ] });
-          //await interaction.deferUpdate();
-          //interaction.channel.permissionOverwrites.edit(tao, { VIEW_CHANNEL: true }).catch(console.error);
-        //}
-        if(interaction.message.id == msg.id){
-          const tao = client.users.cache.get("526620171658330112")
-          interaction.channel.permissionOverwrites.edit(tao, { VIEW_CHANNEL: true }).catch(console.error);
-          const ch = client.channels.cache.get(data[0][index])
-          const notify = await ch.send({ content: m, embeds: [ embed ] })
-          const success = new MessageEmbed()
+        .setAuthor(`属性: ${zokusei}`, attribute)
+        .setDescription(
+          `<#${message.channel.id}>で**${rank}${name}**が出現しました！\n\nLv.\`${Number(lv).toLocaleString()}\` HP \`${Number(
+            lv * 10 + 50
+          ).toLocaleString()}\`\n\n[**Direct Link**](https://discord.com/channels/${message.guild.id}/${message.channel.id}/${message.id})`
+        )
+        .setFooter("User TAO")
+        .setColor("RANDOM");
+      if (image != undefined) embed.setThumbnail(image);
+
+      // 通知するチャンネルにメッセージを送る処理
+      const notifyChannel = client.channels.cache.get(data[0][index]); // 通知を送るチャンネルID
+      if (notifyChannel) {
+        const notify = await notifyChannel.send({ content: m, embeds: [embed] });
+
+        // 通知完了メッセージを元のチャンネルに送信
+        const success = new MessageEmbed()
           .setTitle("通知完了")
           .setURL(`https://discord.com/channels/${notify.guild.id}/${notify.channel.id}/${notify.id}`)
-          .setColor("RANDOM")
-        }
-        if(interaction.message.id == msg.id && interaction.customId == "nomt"){
-          interaction.message.delete()
-        }
-      })
+          .setColor("RANDOM");
+        await message.channel.send({ embeds: [success] });
+      }
     }
-    //自動変更
+  }
+   //自動変更
     if(message.channel.topic == "auto:100"){
       const level = Math.floor(Number(lv) / 100) * 100
       if(message.channel.name.match(/lv+\d+$/)){
@@ -217,9 +177,8 @@ client.on("messageCreate", async message => {
         return;
       }
       await message.channel.setName(`${message.channel.name}-lv${level}`)
-    }
-  }
-})
+    }})})
+
 
 client.on('messageUpdate', async (oldMessage, newMessage) => {
   const data = await db.get(newMessage.guild.id)
