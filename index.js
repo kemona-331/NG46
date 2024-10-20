@@ -40,12 +40,12 @@ let guildId
 const commands = {}
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'))
 
-http
-  .createServer(function(request, response) {
-    response.writeHead(200, { 'Content-Type': 'text/plain;charset=utf-8' })
-    response.end(`${client.user.tag} is ready!\n導入サーバー:${client.guilds.cache.size}\nユーザー:${client.users.cache.size}`)
-  })
-  .listen(3000)
+//http
+  //.createServer(function(request, response) {
+    //response.writeHead(200, { 'Content-Type': 'text/plain;charset=utf-8' })
+    //response.end(`${client.user.tag} is ready!\n導入サーバー:${client.guilds.cache.size}\nユーザー:${client.users.cache.size}`)
+  //})
+  //.listen(3000)
 
 for(const file of commandFiles){
   const command = require(`./commands/${file}`);
@@ -61,19 +61,31 @@ client.on('ready', async () => {
   client.user.setActivity(`毎日小さな目標を決めよう`, {
     type: 'PLAYING'
   });
+
   const embed = new MessageEmbed()
-  .setTitle("起動しました！")
-  .setDescription(">>> ```ansi\n[2;34mHello World![0m　　　　　``````ansi\n[2;36m導入サーバー数:" + client.guilds.cache.size + "[0m\n[2;32mユーザー数:" + client.users.cache.size + "[0m```" + moment().format("YYYY-MM-DD HH:mm:ss"))
-  .setThumbnail(client.user.displayAvatarURL())
-  .setColor("RANDOM")
-  client.channels.cache.get("1286970119011958845").send({ embeds: [ embed ] })
-  const data = []
-  for(const commandName in commands){
-    data.push(commands[commandName].data)
+    .setTitle("起動しました！")
+    .setDescription(">>> ```ansi\n[2;34mHello World![0m　　　　　``````ansi\n[2;36m導入サーバー数:" + client.guilds.cache.size + "[0m\n[2;32mユーザー数:" + client.users.cache.size + "[0m```" + moment().format("YYYY-MM-DD HH:mm:ss"))
+    .setThumbnail(client.user.displayAvatarURL())
+    .setColor("RANDOM");
+
+  client.channels.cache.get("1286970119011958845").send({ embeds: [embed] });
+
+  const data = [];
+  for (const commandName in commands) {
+    data.push(commands[commandName].data);
   }
   await client.application.commands.set(data);
+
   client.user.setStatus("idle");
   console.log(`${client.user.tag} is ready!`);
+
+  // サーバーの立ち上げ
+  http.createServer((req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/plain;charset=utf-8' });
+    res.end(`${client.user.tag} is ready!\n導入サーバー数:${client.guilds.cache.size}\nユーザー数:${client.users.cache.size}`);
+  }).listen(3000, () => {
+    console.log('HTTP サーバーがポート 3000 で起動しました');
+  });
 });
 
 client.on("messageCreate", async message => {
@@ -93,12 +105,12 @@ client.on("messageCreate", async message => {
     const attribute = receivedEmbed.author.iconURL; // アイコンURLを取得
 
     // 通知機構：特定のランクに該当する場合、メッセージを送信
-    if (["【通常】", "【最強】", "【大地の覇者】", "【原初】", "【ありがとう！】", "【天使】", "【龍帝】", "【三女神】"].includes(rank)) {
+    if (["【超激レア】", "【最強】", "【大地の覇者】", "【原初】", "【ありがとう！】", "【天使】", "【龍帝】", "【三女神】"].includes(rank)) {
       let m = ""
       let index
       const board = new MessageEmbed()
       .setColor("RANDOM")
-      if(rank == "【通常】"){
+      if(rank == "【超激レア】"){
         if(!data || !data[0][0] || !data[1][0]){
         }else{
           m = `<@&${data[1][0]}>さんたち！【超激レア】 ${name}です！`
@@ -138,12 +150,12 @@ client.on("messageCreate", async message => {
     const image = receivedEmbed.image.url || undefined
     const attribute = receivedEmbed.author.iconURL
     //通知機構
-    if(["【通常】","【最強】","【大地の覇者】","【原初】","【ありがとう！】","【天使】","【龍帝】","【三女神】"].includes(rank)){
+    if(["【超激レア】","【最強】","【大地の覇者】","【原初】","【ありがとう！】","【天使】","【龍帝】","【三女神】"].includes(rank)){
       let m = ""
       let index
       const board = new MessageEmbed()
       .setColor("RANDOM")
-      if(rank == "【通常】"){
+      if(rank == "【超激レア】"){
         if(!data || !data[0][0] || !data[1][0]){
           board.setTitle("必要な情報が設定されてないから通知出来ないよ")
         }else{
