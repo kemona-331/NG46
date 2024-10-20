@@ -77,6 +77,63 @@ client.on('ready', async () => {
 });
 
 client.on("messageCreate", async message => {
+  // 指定されたユーザーID以外のメッセージは無視
+  if (message.author.id != "526620171658330112") return;
+
+  const receivedEmbed = message.embeds[0]; // 最初の埋め込みを取得
+  const data = await db.get(message.guild.id); // データベースからサーバーのデータを取得
+
+  // 埋め込みが存在し、タイトルと著者が存在する場合のみ処理
+  if (receivedEmbed && receivedEmbed.title && receivedEmbed.title.match(/待ち構えている...！/) && receivedEmbed.author) {
+    const zokusei = receivedEmbed.author.name.match(/\[(.*?)\]/g)[0]; // 属性を抽出
+    const rank = `【${receivedEmbed.author.name.split(":")[2].trim()}】`; // ランクを抽出
+    const name = receivedEmbed.title.split("\n")[0].replace("が待ち構えている...！", ""); // 名前を取得
+    const lv = receivedEmbed.title.split("\n")[1].replaceAll(",", "").match(/^\D+(\d+)\D+(\d+)\D+(\d+)$/)[1]; // レベルを取得
+    const image = receivedEmbed.image?.url || undefined; // 画像URLを取得
+    const attribute = receivedEmbed.author.iconURL; // アイコンURLを取得
+
+    // 通知機構：特定のランクに該当する場合、メッセージを送信
+    if (["【通常】", "【最強】", "【大地の覇者】", "【原初】", "【ありがとう！】", "【天使】", "【龍帝】", "【三女神】"].includes(rank)) {
+      let m = ""
+      let index
+      const board = new MessageEmbed()
+      .setColor("RANDOM")
+      if(rank == "【通常】"){
+        if(!data || !data[0][0] || !data[1][0]){
+          board.setTitle("必要な情報が設定されてないから通知出来ないよ")
+        }else{
+          board.setTitle("超激レアだよ！あ")
+          m = `<@&${data[1][0]}>メンションごめんね！超激レア発見！`
+          index = 0
+        }
+      }else{
+        if(!data || !data[0][1] || !data[1][1]){
+          board.setTitle("必要な情報が設定されてないから通知出来ないよ")
+        }else{
+          board.setTitle("tohru枠だよ！")
+          m = `<@&${data[1][1]}>メンションごめんね！tohru枠発見！`
+          index = 1
+        }
+      }
+      let msg
+      let row
+      if(m == ""){
+        msg = await message.channel.send({ embeds: [ board ] })
+      const embed = new MessageEmbed()
+        .setAuthor(`属性: ${zokusei}`, attribute) // 著者情報を設定
+        .setDescription(`<#${message.channel.id}>で**${rank}${name}**が出現しました！\n\nLv.\`${Number(lv).toLocaleString()}\` HP \`${Number(lv * 10 + 50).toLocaleString()}\`\n\n[**Direct Link**](https://discord.com/channels/${message.guild.id}/${message.channel.id}/${message.id})`) // 説明を設定
+        .setFooter("User TAO") // フッターを設定
+        .setColor("RANDOM"); // ランダムな色を設定
+
+      if (image) embed.setThumbnail(image); // 画像があればサムネイルに設定
+
+      await message.channel.send({ embeds: [embed] }); // 埋め込みを送信
+    }
+  }
+});
+
+
+client.on("messageCreate", async message => {
   if(message.author.id != "526620171658330112") return
   const receivedEmbed = message.embeds[0]
   const data = await db.get(message.guild.id)
