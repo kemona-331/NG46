@@ -261,7 +261,7 @@ const targetChannels = [
     { id: "1278694329916854274", message: "Ramiel" },
     { id: "1278832361055981589", message: "Ireul" },
     { id: "1289935038003019857", message: "Zeruel" },
-    //{ id: "1289935144517636207", message: "Arael" }
+    { id: "1289935144517636207", message: "Arael" }
 ];
 
 // チャンネルごとにタイムアウトを管理するオブジェクト
