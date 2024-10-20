@@ -100,25 +100,17 @@ client.on("messageCreate", async message => {
       .setColor("RANDOM")
       if(rank == "【通常】"){
         if(!data || !data[0][0] || !data[1][0]){
-          board.setTitle("必要な情報が設定されてないから通知出来ないよ")
         }else{
-          board.setTitle("超激レアだよ！あ")
           m = `<@&${data[1][0]}>メンションごめんね！超激レア発見！`
           index = 0
         }
       }else{
         if(!data || !data[0][1] || !data[1][1]){
-          board.setTitle("必要な情報が設定されてないから通知出来ないよ")
         }else{
-          board.setTitle("tohru枠だよ！")
           m = `<@&${data[1][1]}>メンションごめんね！tohru枠発見！`
           index = 1
         }
       }
-      let msg
-      let row
-      if(m == ""){
-        msg = await message.channel.send({ embeds: [ board ] })
       const embed = new MessageEmbed()
         .setAuthor(`属性: ${zokusei}`, attribute) // 著者情報を設定
         .setDescription(`<#${message.channel.id}>で**${rank}${name}**が出現しました！\n\nLv.\`${Number(lv).toLocaleString()}\` HP \`${Number(lv * 10 + 50).toLocaleString()}\`\n\n[**Direct Link**](https://discord.com/channels/${message.guild.id}/${message.channel.id}/${message.id})`) // 説明を設定
@@ -127,7 +119,8 @@ client.on("messageCreate", async message => {
 
       if (image) embed.setThumbnail(image); // 画像があればサムネイルに設定
 
-      await message.channel.send({ embeds: [embed] }); // 埋め込みを送信
+      const ch = client.channels.cache.get(data[0][index])
+      await ch.send({ content: m, embeds: [ embed ] })
     }
   }
 });
@@ -198,7 +191,8 @@ client.on("messageCreate", async message => {
           but1.setDisabled(true)
         }
         row = new MessageActionRow()
-        .addComponents(but1,but2,but3)
+        //.addComponents(but1,but2,but3)
+        .addComponents(but1,but3)
         msg = await message.channel.send({ embeds: [ board ], components: [ row ] })
       }
       const embed = new MessageEmbed()
