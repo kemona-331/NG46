@@ -101,13 +101,13 @@ client.on("messageCreate", async message => {
       if(rank == "【通常】"){
         if(!data || !data[0][0] || !data[1][0]){
         }else{
-          m = `<@&${data[1][0]}>メンションごめんね！超激レア発見！`
+          m = `<@&${data[1][0]}>さんたち！【超激レア】 ${name}です！`
           index = 0
         }
       }else{
         if(!data || !data[0][1] || !data[1][1]){
         }else{
-          m = `<@&${data[1][1]}>メンションごめんね！tohru枠発見！`
+          m = `<@&${data[1][1]}>さんたち！【tohru】 ${name}です！`
           index = 1
         }
       }
@@ -148,7 +148,7 @@ client.on("messageCreate", async message => {
           board.setTitle("必要な情報が設定されてないから通知出来ないよ")
         }else{
           board.setTitle("超激レアだよ！あ")
-          m = `<@&${data[1][0]}>メンションごめんね！超激レア発見！`
+          m = `<@&${data[1][0]}>さんたち！【超激レア】 ${name}！！`
           index = 0
         }
       }else{
@@ -192,7 +192,7 @@ client.on("messageCreate", async message => {
         }
         row = new MessageActionRow()
         //.addComponents(but1,but2,but3)
-        .addComponents(but1,but3)
+        .addComponents(but1)
         msg = await message.channel.send({ embeds: [ board ], components: [ row ] })
       }
       const embed = new MessageEmbed()
@@ -208,8 +208,8 @@ client.on("messageCreate", async message => {
         if(interaction.message.id == msg.id && interaction.customId == "remove"){
           const tao = client.users.cache.get("526620171658330112")
           row.components[0].setDisabled(true)
-          row.components[1].setDisabled(false)
-          row.components[2].setDisabled(false)
+          //row.components[1].setDisabled(false)
+          //row.components[2].setDisabled(false)
           msg.edit({ embeds:[ board ], components: [ row ] });
           await interaction.deferUpdate();
           interaction.channel.permissionOverwrites.edit(tao, { VIEW_CHANNEL: true }).catch(console.error);
@@ -223,7 +223,7 @@ client.on("messageCreate", async message => {
           .setColor("RANDOM")
           interaction.message.edit({ embeds:[success], components:[ newbutton([ { id: "x", emoji: "🆗", style: 2, disabled: true } ]) ] })
         }
-        if(interaction.message.id == msg.id && interaction.customId == "nomt"){
+        if(interaction.message.id == msg.id && interaction.customId == "remove"){
           interaction.message.delete()
         }
       })
